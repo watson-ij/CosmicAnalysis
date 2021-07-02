@@ -88,7 +88,7 @@ private:
   float csc_r, csc_x, csc_y, csc_z, csc_pr, csc_px, csc_py, csc_pz, csc_pth, chi2;
   float gem_x, gem_y, gem_z;
   float dr,in;
-  int re, ch;
+  int re, ch, etap;
 };
 
 CosmicAnalysis::CosmicAnalysis(const edm::ParameterSet& iConfig) :
@@ -124,6 +124,7 @@ CosmicAnalysis::CosmicAnalysis(const edm::ParameterSet& iConfig) :
   t_csc->Branch("in", &in, "in/F");
   t_csc->Branch("re", &re, "re/I");
   t_csc->Branch("ch", &ch, "ch/I");
+  t_csc->Branch("etap", &etap, "etap/I");
 }
 
 CosmicAnalysis::~CosmicAnalysis()
@@ -216,13 +217,13 @@ CosmicAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         gem_x = pos.x() + s * dir.x();
         gem_y = pos.y() + s * dir.y();
         // check if it propagates inside the bounds of one of the eta partitions
-        in=0;
+        in=0; etap=0;
         for (int i = 1; i <= 8; ++i) {
           GEMDetId gemDetId(csc.cscDetId().zendcap(),1,1,2,csc.cscDetId().chamber(),i);
           auto gem_part = GEMGeometry_->etaPartition(gemDetId);
           auto loc = gem_part->toLocal(GlobalPoint(gem_x,gem_y,gem_z));
           if (gem_part->surface().bounds().inside(loc)) {
-            in=1;
+            in=1; etap=i;
             nInGEMBounds++;
           }
         }
